@@ -68,7 +68,9 @@ function Disable-CBT
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullorEmpty()]
-        $VMName
+        $VMName,
+		[Parameter(Mandatory = $false)]
+		[switch] $Force
     )
 
 	Begin{
@@ -82,7 +84,7 @@ function Disable-CBT
 
         		$vm = Get-vm $VMName -ErrorAction Stop
 				$vmView = $vm | get-view
-				if( $vmView.Config.ChangeTrackingEnabled -eq $true) {
+				if( $vmView.Config.ChangeTrackingEnabled -eq $true -or $Force) {
 					$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
 					$vmConfigSpec.changeTrackingEnabled = $false
 					$vmView.reconfigVM($vmConfigSpec)
@@ -118,7 +120,9 @@ function Enable-CBT
     Param(
         [Parameter(Mandatory = $true, ValueFromPipeline = $true)]
         [ValidateNotNullorEmpty()]
-        $VMName
+        $VMName,
+		[Parameter(Mandatory = $false)]
+		[switch] $Force		
     )
 
 	Begin{
@@ -132,7 +136,7 @@ function Enable-CBT
 
         		$vm = Get-vm $VMName -ErrorAction Stop
 				$vmView = $vm | get-view
-				if( $vmView.Config.ChangeTrackingEnabled -eq $false) {
+				if( $vmView.Config.ChangeTrackingEnabled -eq $false -or $Force) {
 					$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
 					$vmConfigSpec.changeTrackingEnabled = $true
 					$vmView.reconfigVM($vmConfigSpec)
