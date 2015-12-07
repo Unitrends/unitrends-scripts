@@ -15,47 +15,47 @@ function Reset-CBT
 	}
 	
     Process {      
-			try{		
-	        	$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
+		try{		
+        	$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
 				
-				$vm = $VM
-				if($vm -is [String]) {
-					$vm = Get-vm $VM -ErrorAction Stop
-				}		
+			$vm = $VM
+			if($vm -is [String]) {
+				$vm = Get-vm $VM -ErrorAction Stop
+			}		
 
-				$vmView = $vm.ExtensionData
+			$vmView = $vm.ExtensionData
 
-				if( ($vmView.Config.ChangeTrackingEnabled -eq $true -and $vmView.Snapshot -eq $null -and $vm.PowerState -eq "PoweredOn") -or $Force) {
-					$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
-					$vmConfigSpec.changeTrackingEnabled = $false
-					$vmView.reconfigVM($vmConfigSpec)
+			if( ($vmView.Config.ChangeTrackingEnabled -eq $true -and $vmView.Snapshot -eq $null -and $vm.PowerState -eq "PoweredOn") -or $Force) {
+				$vmConfigSpec = New-Object VMware.Vim.VirtualMachineConfigSpec
+				$vmConfigSpec.changeTrackingEnabled = $false
+				$vmView.reconfigVM($vmConfigSpec)
 														
-	                New-Snapshot -Name 'unitrends_cbt_reset' -VM $vm -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
-	                Get-Snapshot -Name 'unitrends_cbt_reset' -VM $vm|Remove-Snapshot -Confirm:$false -ErrorAction Stop | Out-Null
+                New-Snapshot -Name 'unitrends_cbt_reset' -VM $vm -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                Get-Snapshot -Name 'unitrends_cbt_reset' -VM $vm|Remove-Snapshot -Confirm:$false -ErrorAction Stop | Out-Null
 					
-					$vmConfigSpec.changeTrackingEnabled = $true
-					$vmView.reconfigVM($vmConfigSpec)
+				$vmConfigSpec.changeTrackingEnabled = $true
+				$vmView.reconfigVM($vmConfigSpec)
 														
-	                New-Snapshot -Name 'unitrends_cbt_reset' -VM $vm -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
-	                Get-Snapshot -Name 'unitrends_cbt_reset' -VM $vm|Remove-Snapshot -Confirm:$false -ErrorAction Stop | Out-Null
+                New-Snapshot -Name 'unitrends_cbt_reset' -VM $vm -ErrorAction Stop -WarningAction SilentlyContinue | Out-Null
+                Get-Snapshot -Name 'unitrends_cbt_reset' -VM $vm|Remove-Snapshot -Confirm:$false -ErrorAction Stop | Out-Null
 					
-					Write-Host "[*] $VM : OK"
-				} else {
-					if($vmView.Config.ChangeTrackingEnabled -eq $false) {
-						throw "CBT is disabled"			
-					}elseif($vmView.Snapshot -ne $null){
-						throw "VM has snapshots. use Reset-CBT -Force to ignore"			
-					}elseif($vm.PowerState -ne "PoweredOn") {
-						throw "VM is powered off, use Reset-CBT -Force to ignore"		
-					}
+				Write-Host "[*] $VM : OK"
+			} else {
+				if($vmView.Config.ChangeTrackingEnabled -eq $false) {
+					throw "CBT is disabled"			
+				}elseif($vmView.Snapshot -ne $null){
+					throw "VM has snapshots. use Reset-CBT -Force to ignore"			
+				}elseif($vm.PowerState -ne "PoweredOn") {
+					throw "VM is powered off, use Reset-CBT -Force to ignore"		
 				}
 			}
-			catch [Exception]{
-				$vm | Add-Member -MemberType NoteProperty "Result" -Value "Failed"
-				$vm | Add-Member -MemberType NoteProperty "Error" -Value "$_"
-				$error_vmlist += $vm
-				Write-Warning  "[*] $VM : FAILED ( $_ )"
-			}
+		}
+		catch [Exception]{
+			$vm | Add-Member -MemberType NoteProperty "Result" -Value "Failed"
+			$vm | Add-Member -MemberType NoteProperty "Error" -Value "$_"
+			$error_vmlist += $vm
+			Write-Warning  "[*] $VM : FAILED ( $_ )"
+		}
 
     } # End of process
 	
